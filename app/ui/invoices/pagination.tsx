@@ -4,17 +4,31 @@ import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 import Link from 'next/link';
 import { generatePagination } from '@/app/lib/utils';
+import { usePathname, useSearchParams } from 'next/navigation';
 
 export default function Pagination({ totalPages }: { totalPages: number }) {
   // NOTE: comment in this code when you get to this point in the course
+  const pathname = usePathname(); //檢測現在URL的位置，例如：/dashboard/invoices
+  const searchParams = useSearchParams(); //使用URLSearchParams API來檢測現在URL的參數，例如：?page=1
+  const currentPage = Number(searchParams.get('page')) || 1; //使用searchParams.get('page')來檢測現在URL的參數，例如：?page=1，如果沒有page參數，那麼currentPage就會是1
 
-  // const allPages = generatePagination(currentPage, totalPages);
+  //建立一個箭頭函式，用來產生頁面的URL，輸入參數是pageNumber是一個數字或字串。這個function在return中被使用。
+  const createPageURL = (pageNumber: number | string) => {
+    const params = new URLSearchParams(searchParams);
+    params.set('page', pageNumber.toString());
+    return `${pathname}?${params.toString()}`; //例如： /dashboard/invoices?page=2
+  };
+
+  //計算目前資料筆數總共有幾頁
+  const allPages = generatePagination(currentPage, totalPages);
 
   return (
     <>
       {/* NOTE: comment in this code when you get to this point in the course */}
-
-      {/* <div className="inline-flex">
+      {/* 左箭頭，用於回到前一頁，當按下時，觸發createPageURL拿到網頁URL，例如/dashboard/invoices?page=1
+          然後使用Link來連結到URL，如果currentPage <= 1，那麼isDisabled就會是true，這樣就會顯示pointer-events-none text-gray-300，表示這個按鈕不能按，並且顏色會變成灰色
+      */}
+      <div className="inline-flex">
         <PaginationArrow
           direction="left"
           href={createPageURL(currentPage - 1)}
@@ -47,7 +61,7 @@ export default function Pagination({ totalPages }: { totalPages: number }) {
           href={createPageURL(currentPage + 1)}
           isDisabled={currentPage >= totalPages}
         />
-      </div> */}
+      </div>
     </>
   );
 }
